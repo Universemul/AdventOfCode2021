@@ -4,12 +4,14 @@ import os
 import requests
 import datetime
 import shutil
+import subprocess
 
 URL = "https://adventofcode.com/{year}/day/{day}/input"
 PWD = os.getcwd()
 COOKIE_SESSION=os.getenv("AOC_SESSION") # See https://github.com/wimglenn/advent-of-code-data/tree/ed7cd3ff807228d5e78abbde02276231182ce986
-TEMPLATE=f"{PWD}/templates/main.py"
-TEMPLATE_PERF=f"{PWD}/templates/perf.py"
+TEMPLATE=f"{PWD}/templates/main.rs"
+TEMPLATE_LIB=f"{PWD}/templates/lib.rs"
+TEMPLATE_UTIL=f"{PWD}/templates/util.rs"
 
 
 def current_day():
@@ -25,17 +27,21 @@ def create_context(url: str, day_number: int):
     r = requests.get(url, cookies={"session": COOKIE_SESSION})
     directory = f"{PWD}/day{day_number}"
     if not os.path.exists(directory):
-        os.makedirs(directory)
+        subprocess.run(["cargo", "new", f"day{day_number}"])
     with open(f"{directory}/input.txt", 'wb') as f:
         f.write(r.content)
     if os.path.exists(TEMPLATE): #Copy template in directory
-        shutil.copyfile(TEMPLATE, f"{directory}/main.py") 
-    if os.path.exists(TEMPLATE_PERF): #Copy template in directory
-        shutil.copyfile(TEMPLATE_PERF, f"{directory}/perf.py") 
-
+        with open(TEMPLATE, "r") as main_file:
+            data = main_file.read().replace("{{day}}", f"day{day_number}")
+            with open(f"{directory}/src/main.rs", "w") as f:
+                f.write(data)
+    for file in [TEMPLATE_LIB, TEMPLATE_UTIL]:
+        if os.path.exists(file): #Copy template in directory
+            name = file.split("/")[-1]
+            shutil.copyfile(file, f"{directory}/src/{name}") 
 
 def usage():
-    print('start.py {day number}')
+    print('start.py')
     exit(1)
 
 def main():
