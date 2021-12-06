@@ -13,6 +13,8 @@ TEMPLATE_PERF=f"{PWD}/templates/perf.py"
 
 
 def current_day():
+    if len(sys.argv) > 1:
+        return int(sys.argv[1])
     now = datetime.datetime.now()
     day = min(now.day, 25)
     return day
