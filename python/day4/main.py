@@ -26,6 +26,9 @@ def is_winning(board):
     for row in board:
         if all(x == 'x' for x in row):
             return True
+    for i in range(len(board[0])):
+        if all(row[i] == 'x' for row in board):
+            return True
     return result
 
 def main1():
@@ -51,6 +54,33 @@ def main1():
 
 def main2():
     lines = read_file(INPUT_FILE)
+    numbers = lines[0].split(',')
+    boards = []
+    idx = 2
+    while idx < len(lines[2:]):
+        b = []
+        while idx < len(lines) and lines[idx]:
+            b.append([x.strip() for x in lines[idx].split(' ') if x])
+            idx += 1
+        boards.append(b)
+        idx += 1
+    last_winner = None
+    last_n = None
+    for n in numbers:
+        boards = [mark_board(n, b) for b in boards]
+        removing_boards = []
+        for b in boards:
+            if is_winning(b):
+                last_winner = b 
+                last_n = n
+                removing_boards.append(b)
+                break
+        boards = [x for x in boards if x not in removing_boards]
+        if len(boards) == 0:
+            break
+    print(last_winner, n, last_n)
+    result = (int(n) * sum([int(a) for row in b for a in row if a != 'x']))
+    print(result)
     
 if __name__ == "__main__":
     main1()
